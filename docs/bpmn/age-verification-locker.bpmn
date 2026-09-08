@@ -1,0 +1,963 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_AgeVerificationLocker" targetNamespace="https://example.com/company-x/age-verification-locker" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.28.0">
+  <bpmn:collaboration id="Collaboration_AgeVerification">
+    <bpmn:participant id="Participant_User" name="Користувач" processRef="Process_User" />
+    <bpmn:participant id="Participant_CompanyX" name="Company X" processRef="Process_CompanyX" />
+    <bpmn:participant id="Participant_OurSystem" name="Наша система" processRef="Process_OurSystem" />
+    <bpmn:participant id="Participant_Diia" name="Дія" processRef="Process_Diia" />
+    <bpmn:messageFlow id="M_01" name="Запит на створення посилки + ознака перевірки віку" sourceRef="Task_CX_CreateParcel" targetRef="Start_Our_CreateParcel" />
+    <bpmn:messageFlow id="M_02" name="Модель посилки + Courier Code + Customer Code" sourceRef="Task_Our_ReturnParcel" targetRef="Event_CX_ReceiveParcelModel" />
+    <bpmn:messageFlow id="M_03" name="Courier Code" sourceRef="Task_CX_CourierDeliver" targetRef="Event_Our_CourierCode" />
+    <bpmn:messageFlow id="M_06" name="Вимога підтвердити вік" sourceRef="Task_Our_ShowAgePrompt" targetRef="Event_User_AgePrompt" />
+    <bpmn:messageFlow id="M_08" name="Запуск на підтвердження віку" sourceRef="Activity_0emdf8y" targetRef="Event_CX_AgeRequest" />
+    <bpmn:messageFlow id="M_09" name="Запит на підтвердження віку" sourceRef="Task_CX_RequestDiia" targetRef="Start_Diia_Request" />
+    <bpmn:messageFlow id="M_11" name="Одноразовий код підтвердження віку" sourceRef="Task_CX_ShowAgeCode" targetRef="Event_User_AgeCode" />
+    <bpmn:messageFlow id="M_12" name="Відмова або помилка підтвердження" sourceRef="Task_CX_ShowFailure" targetRef="Event_User_AgeFailure" />
+    <bpmn:messageFlow id="M_13" name="Одноразовий код" sourceRef="Activity_1wthjmc" targetRef="Event_Our_AgeCode" />
+    <bpmn:messageFlow id="M_14" name="Комірку відкрито" sourceRef="Activity_0ffh3tn" targetRef="Event_User_OpenAfterAge" />
+    <bpmn:messageFlow id="M_15" name="Код невалідний" sourceRef="Task_Our_ShowInvalid" targetRef="Event_User_InvalidCode" />
+    <bpmn:messageFlow id="Flow_0n5d8rh" name="Customer Code" sourceRef="Task_CX_SendCustomerCode" targetRef="Start_User_CustomerCode" />
+    <bpmn:messageFlow id="Flow_1jlz08a" name="Результат підтвердження віку" sourceRef="Task_Diia_ReturnResult" targetRef="Event_CX_DiiaResult" />
+    <bpmn:messageFlow id="M_05" name="Customer Code" sourceRef="Activity_09ti96p" targetRef="Event_Our_CustomerCode" />
+    <bpmn:textAnnotation id="TextAnnotation_0wh3l0q">
+      <bpmn:text>Механізм інтеграційної перевірки коду  запропоновано окремо.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_14hahi5" associationDirection="None" sourceRef="Task_Our_ValidateAgeCode" targetRef="TextAnnotation_0wh3l0q" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_User" isExecutable="false">
+    <bpmn:eventBasedGateway id="Gateway_User_CodeResult" name="Очікувати результат перевірки коду">
+      <bpmn:incoming>F_U_12</bpmn:incoming>
+      <bpmn:outgoing>F_U_13</bpmn:outgoing>
+      <bpmn:outgoing>F_U_14</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="Event_User_OpenAfterAge" name="Отримати повідомлення про відкриття комірки">
+      <bpmn:incoming>F_U_13</bpmn:incoming>
+      <bpmn:outgoing>F_U_16</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_User_OpenAfterAge_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:startEvent id="Start_User_CustomerCode" name="Отримано Customer Code">
+      <bpmn:outgoing>F_U_01</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Start_User_CustomerCode_MessageDef" />
+    </bpmn:startEvent>
+    <bpmn:intermediateCatchEvent id="Event_User_AgeCode" name="Отримати одноразовий код підтвердження віку">
+      <bpmn:incoming>F_U_09</bpmn:incoming>
+      <bpmn:outgoing>F_U_11</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_User_AgeCode_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Event_User_AgePrompt" name="Отримати вимогу підтвердити вік">
+      <bpmn:incoming>F_U_03</bpmn:incoming>
+      <bpmn:outgoing>F_U_06</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_User_AgePrompt_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Event_User_AgeFailure" name="Отримати відмову або помилку підтвердження">
+      <bpmn:incoming>F_U_10</bpmn:incoming>
+      <bpmn:outgoing>F_U_19</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_User_AgeFailure_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Event_User_InvalidCode" name="Отримати відмову або помилку підтвердження">
+      <bpmn:incoming>F_U_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_1a4r4a5</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_User_InvalidCode_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="End_User_AgeFailure" name="Видачу не дозволено">
+      <bpmn:incoming>F_U_19</bpmn:incoming>
+      <bpmn:incoming>Flow_1a4r4a5</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="End_User_Success" name="Посилку отримано">
+      <bpmn:incoming>F_U_18</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Activity_0emdf8y" name="Запустити підтвердження віку">
+      <bpmn:incoming>F_U_07</bpmn:incoming>
+      <bpmn:outgoing>F_U_08</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_1wthjmc" name="Ввести одноразовий код на поштоматі">
+      <bpmn:incoming>F_U_11</bpmn:incoming>
+      <bpmn:outgoing>F_U_12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_02zaytj" name="Прийти до поштомата">
+      <bpmn:incoming>F_U_01</bpmn:incoming>
+      <bpmn:outgoing>F_U_02</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_09ti96p" name="Ввести або відсканувати Customer Code">
+      <bpmn:incoming>F_U_02</bpmn:incoming>
+      <bpmn:outgoing>F_U_03</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_1wyk9cl" name="Відкрити мобільний застосунок Company X">
+      <bpmn:incoming>F_U_06</bpmn:incoming>
+      <bpmn:outgoing>F_U_07</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:eventBasedGateway id="Gateway_User_AgeResult" name="Очікувати результат підтвердження віку">
+      <bpmn:incoming>F_U_08</bpmn:incoming>
+      <bpmn:outgoing>F_U_09</bpmn:outgoing>
+      <bpmn:outgoing>F_U_10</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:userTask id="Activity_1dakl7e" name="Забрати посилку">
+      <bpmn:incoming>F_U_16</bpmn:incoming>
+      <bpmn:outgoing>F_U_18</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="F_U_12" sourceRef="Activity_1wthjmc" targetRef="Gateway_User_CodeResult" />
+    <bpmn:sequenceFlow id="F_U_13" sourceRef="Gateway_User_CodeResult" targetRef="Event_User_OpenAfterAge" />
+    <bpmn:sequenceFlow id="F_U_14" sourceRef="Gateway_User_CodeResult" targetRef="Event_User_InvalidCode" />
+    <bpmn:sequenceFlow id="F_U_16" sourceRef="Event_User_OpenAfterAge" targetRef="Activity_1dakl7e" />
+    <bpmn:sequenceFlow id="F_U_01" sourceRef="Start_User_CustomerCode" targetRef="Activity_02zaytj" />
+    <bpmn:sequenceFlow id="F_U_09" sourceRef="Gateway_User_AgeResult" targetRef="Event_User_AgeCode" />
+    <bpmn:sequenceFlow id="F_U_11" sourceRef="Event_User_AgeCode" targetRef="Activity_1wthjmc" />
+    <bpmn:sequenceFlow id="F_U_03" sourceRef="Activity_09ti96p" targetRef="Event_User_AgePrompt" />
+    <bpmn:sequenceFlow id="F_U_06" sourceRef="Event_User_AgePrompt" targetRef="Activity_1wyk9cl" />
+    <bpmn:sequenceFlow id="F_U_10" sourceRef="Gateway_User_AgeResult" targetRef="Event_User_AgeFailure" />
+    <bpmn:sequenceFlow id="F_U_19" sourceRef="Event_User_AgeFailure" targetRef="End_User_AgeFailure" />
+    <bpmn:sequenceFlow id="Flow_1a4r4a5" sourceRef="Event_User_InvalidCode" targetRef="End_User_AgeFailure" />
+    <bpmn:sequenceFlow id="F_U_18" sourceRef="Activity_1dakl7e" targetRef="End_User_Success" />
+    <bpmn:sequenceFlow id="F_U_07" sourceRef="Activity_1wyk9cl" targetRef="Activity_0emdf8y" />
+    <bpmn:sequenceFlow id="F_U_08" sourceRef="Activity_0emdf8y" targetRef="Gateway_User_AgeResult" />
+    <bpmn:sequenceFlow id="F_U_02" sourceRef="Activity_02zaytj" targetRef="Activity_09ti96p" />
+  </bpmn:process>
+  <bpmn:process id="Process_CompanyX" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Process_CompanyX">
+      <bpmn:lane id="Lane_CX_Courier" name="Кур&#39;єр Company X">
+        <bpmn:flowNodeRef>Task_CX_CourierDeliver</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_CX_Mobile" name="Мобільний застосунок Company X">
+        <bpmn:flowNodeRef>Event_CX_AgeRequest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CX_ShowFailure</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_CX_Failure</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CX_ShowAgeCode</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_CX_Success</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_CX_Backend" name="Бекенд Company X">
+        <bpmn:flowNodeRef>Start_CX</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CX_CreateParcel</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_CX_ReceiveParcelModel</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CX_RequestDiia</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_CX_DiiaResult</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CX_SendCustomerCode</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_CX_AgeConfirmed</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_CX" name="Замовлення оформлено, посилка готова до створення">
+      <bpmn:outgoing>F_CX_01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sendTask id="Task_CX_CreateParcel" name="Створити посилку через API з ознакою перевірки віку">
+      <bpmn:incoming>F_CX_01</bpmn:incoming>
+      <bpmn:outgoing>F_CX_02</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="Event_CX_ReceiveParcelModel" name="Отримати модель посилки, Courier Code і Customer Code">
+      <bpmn:incoming>F_CX_02</bpmn:incoming>
+      <bpmn:outgoing>F_CX_03</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_CX_ReceiveParcelModel_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:task id="Task_CX_CourierDeliver" name="Доставити посилку у поштомат за Courier Code">
+      <bpmn:incoming>F_CX_03</bpmn:incoming>
+      <bpmn:outgoing>F_CX_04</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateCatchEvent id="Event_CX_AgeRequest" name="Отримати запит на підтвердження віку">
+      <bpmn:incoming>F_CX_05</bpmn:incoming>
+      <bpmn:outgoing>F_CX_06</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_CX_AgeRequest_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sendTask id="Task_CX_RequestDiia" name="Ініціювати підтвердження віку через Дію">
+      <bpmn:incoming>F_CX_06</bpmn:incoming>
+      <bpmn:outgoing>F_CX_07</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="Event_CX_DiiaResult" name="Отримати результат підтвердження">
+      <bpmn:incoming>F_CX_07</bpmn:incoming>
+      <bpmn:outgoing>F_CX_08</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_CX_DiiaResult_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sendTask id="Task_CX_SendCustomerCode" name="Передати Customer Code користувачу">
+      <bpmn:incoming>F_CX_04</bpmn:incoming>
+      <bpmn:outgoing>F_CX_05</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="Task_CX_ShowFailure" name="Показати відмову або помилку підтвердження">
+      <bpmn:incoming>F_CX_10</bpmn:incoming>
+      <bpmn:outgoing>F_CX_13</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_CX_Failure" name="Підтвердження неуспішне">
+      <bpmn:incoming>F_CX_13</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="Gateway_CX_AgeConfirmed" name="Вік підтверджено?">
+      <bpmn:incoming>F_CX_08</bpmn:incoming>
+      <bpmn:outgoing>F_CX_10</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1g4i0tf</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sendTask id="Task_CX_ShowAgeCode" name="Показати код у мобільному застосунку">
+      <bpmn:incoming>Flow_1g4i0tf</bpmn:incoming>
+      <bpmn:outgoing>F_CX_12</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_CX_Success" name="Код передано користувачу">
+      <bpmn:incoming>F_CX_12</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F_CX_01" sourceRef="Start_CX" targetRef="Task_CX_CreateParcel" />
+    <bpmn:sequenceFlow id="F_CX_02" sourceRef="Task_CX_CreateParcel" targetRef="Event_CX_ReceiveParcelModel" />
+    <bpmn:sequenceFlow id="F_CX_03" sourceRef="Event_CX_ReceiveParcelModel" targetRef="Task_CX_CourierDeliver" />
+    <bpmn:sequenceFlow id="F_CX_04" sourceRef="Task_CX_CourierDeliver" targetRef="Task_CX_SendCustomerCode" />
+    <bpmn:sequenceFlow id="F_CX_05" sourceRef="Task_CX_SendCustomerCode" targetRef="Event_CX_AgeRequest" />
+    <bpmn:sequenceFlow id="F_CX_06" sourceRef="Event_CX_AgeRequest" targetRef="Task_CX_RequestDiia" />
+    <bpmn:sequenceFlow id="F_CX_07" sourceRef="Task_CX_RequestDiia" targetRef="Event_CX_DiiaResult" />
+    <bpmn:sequenceFlow id="F_CX_08" sourceRef="Event_CX_DiiaResult" targetRef="Gateway_CX_AgeConfirmed" />
+    <bpmn:sequenceFlow id="F_CX_10" name="Ні" sourceRef="Gateway_CX_AgeConfirmed" targetRef="Task_CX_ShowFailure" />
+    <bpmn:sequenceFlow id="F_CX_13" sourceRef="Task_CX_ShowFailure" targetRef="End_CX_Failure" />
+    <bpmn:sequenceFlow id="Flow_1g4i0tf" name="Так" sourceRef="Gateway_CX_AgeConfirmed" targetRef="Task_CX_ShowAgeCode" />
+    <bpmn:sequenceFlow id="F_CX_12" sourceRef="Task_CX_ShowAgeCode" targetRef="End_CX_Success" />
+  </bpmn:process>
+  <bpmn:process id="Process_OurSystem" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Process_OurSystem">
+      <bpmn:lane id="Lane_Our_Locker" name="ПЗ поштомата">
+        <bpmn:flowNodeRef>Task_Our_ValidateCourierCode</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Our_OpenForLoading</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Our_MarkLoaded</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_Our_CustomerCode</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Our_FindParcel</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_Our_CourierCode</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Our_ShowAgePrompt</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_Our_AgeCode</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0jocnjy</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Our_ShowInvalid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_0ffh3tn</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Our_Backend" name="Бекенд нашої системи">
+        <bpmn:flowNodeRef>Start_Our_CreateParcel</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Our_CreateParcel</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Our_GenerateCodes</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Our_ReturnParcel</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Our_Success</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Our_ValidateAgeCode</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Our_CodeValid</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_Our_CreateParcel" name="Отримано запит на створення посилки">
+      <bpmn:outgoing>F_OUR_01</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Start_Our_CreateParcel_MessageDef" />
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Our_CreateParcel" name="Створити посилку та зберегти ознаку необхідності перевірки віку">
+      <bpmn:incoming>F_OUR_01</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_02</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Our_GenerateCodes" name="Згенерувати Courier Code і Customer Code">
+      <bpmn:incoming>F_OUR_02</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_03</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Our_ValidateCourierCode" name="Перевірити Courier Code і знайти посилку">
+      <bpmn:incoming>F_OUR_05</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_06</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Our_OpenForLoading" name="Відкрити комірку для завантаження">
+      <bpmn:incoming>F_OUR_06</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_07</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Our_MarkLoaded" name="Зафіксувати посилку в комірці">
+      <bpmn:incoming>F_OUR_07</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_08</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:intermediateCatchEvent id="Event_Our_CustomerCode" name="Отримати Customer Code від користувача">
+      <bpmn:incoming>F_OUR_08</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_09</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_Our_CustomerCode_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:task id="Task_Our_FindParcel" name="Знайти посилку та перевірити її атрибути">
+      <bpmn:incoming>F_OUR_09</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ywk6gb</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sendTask id="Task_Our_ReturnParcel" name="Повернути модель посилки Company X">
+      <bpmn:incoming>F_OUR_03</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_04</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_Our_Success" name="Видачу дозволено">
+      <bpmn:incoming>F_OUR_19</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_Our_ValidateAgeCode" name="Валідувати одноразовий код підтвердження віку">
+      <bpmn:incoming>F_OUR_14</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="Event_Our_CourierCode" name="Отримати Courier Code на поштоматі">
+      <bpmn:incoming>F_OUR_04</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_05</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_Our_CourierCode_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sendTask id="Task_Our_ShowAgePrompt" name="Показати вимогу підтвердити вік і ввести код">
+      <bpmn:incoming>Flow_0ywk6gb</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_13</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="Event_Our_AgeCode" name="Отримати одноразовий код від користувача">
+      <bpmn:incoming>F_OUR_13</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_14</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Event_Our_AgeCode_MessageDef" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="Event_0jocnjy" name="Видачу не дозволено">
+      <bpmn:incoming>Flow_19qv6ug</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sendTask id="Task_Our_ShowInvalid" name="Показати повідомлення про невалідний код">
+      <bpmn:incoming>F_OUR_17</bpmn:incoming>
+      <bpmn:outgoing>Flow_19qv6ug</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:serviceTask id="Activity_0ffh3tn" name="Відкрити комірку">
+      <bpmn:incoming>F_OUR_16</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_19</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_Our_CodeValid" name="Код валідний?">
+      <bpmn:incoming>F_OUR_15</bpmn:incoming>
+      <bpmn:outgoing>F_OUR_16</bpmn:outgoing>
+      <bpmn:outgoing>F_OUR_17</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="F_OUR_01" sourceRef="Start_Our_CreateParcel" targetRef="Task_Our_CreateParcel" />
+    <bpmn:sequenceFlow id="F_OUR_02" sourceRef="Task_Our_CreateParcel" targetRef="Task_Our_GenerateCodes" />
+    <bpmn:sequenceFlow id="F_OUR_03" sourceRef="Task_Our_GenerateCodes" targetRef="Task_Our_ReturnParcel" />
+    <bpmn:sequenceFlow id="F_OUR_05" sourceRef="Event_Our_CourierCode" targetRef="Task_Our_ValidateCourierCode" />
+    <bpmn:sequenceFlow id="F_OUR_06" sourceRef="Task_Our_ValidateCourierCode" targetRef="Task_Our_OpenForLoading" />
+    <bpmn:sequenceFlow id="F_OUR_07" sourceRef="Task_Our_OpenForLoading" targetRef="Task_Our_MarkLoaded" />
+    <bpmn:sequenceFlow id="F_OUR_08" sourceRef="Task_Our_MarkLoaded" targetRef="Event_Our_CustomerCode" />
+    <bpmn:sequenceFlow id="F_OUR_09" sourceRef="Event_Our_CustomerCode" targetRef="Task_Our_FindParcel" />
+    <bpmn:sequenceFlow id="Flow_0ywk6gb" sourceRef="Task_Our_FindParcel" targetRef="Task_Our_ShowAgePrompt" />
+    <bpmn:sequenceFlow id="F_OUR_04" sourceRef="Task_Our_ReturnParcel" targetRef="Event_Our_CourierCode" />
+    <bpmn:sequenceFlow id="F_OUR_19" sourceRef="Activity_0ffh3tn" targetRef="End_Our_Success" />
+    <bpmn:sequenceFlow id="F_OUR_14" sourceRef="Event_Our_AgeCode" targetRef="Task_Our_ValidateAgeCode" />
+    <bpmn:sequenceFlow id="F_OUR_15" sourceRef="Task_Our_ValidateAgeCode" targetRef="Gateway_Our_CodeValid" />
+    <bpmn:sequenceFlow id="F_OUR_13" sourceRef="Task_Our_ShowAgePrompt" targetRef="Event_Our_AgeCode" />
+    <bpmn:sequenceFlow id="Flow_19qv6ug" sourceRef="Task_Our_ShowInvalid" targetRef="Event_0jocnjy" />
+    <bpmn:sequenceFlow id="F_OUR_17" name="Ні" sourceRef="Gateway_Our_CodeValid" targetRef="Task_Our_ShowInvalid" />
+    <bpmn:sequenceFlow id="F_OUR_16" name="Так" sourceRef="Gateway_Our_CodeValid" targetRef="Activity_0ffh3tn" />
+  </bpmn:process>
+  <bpmn:process id="Process_Diia" isExecutable="false">
+    <bpmn:startEvent id="Start_Diia_Request" name="Отримано запит від Company X">
+      <bpmn:outgoing>F_D_01</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Start_Diia_Request_MessageDef" />
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Diia_Identify" name="Авторизувати та ідентифікувати користувача">
+      <bpmn:incoming>F_D_01</bpmn:incoming>
+      <bpmn:outgoing>F_D_02</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Diia_ConfirmAge" name="Підтвердити досягнення необхідного віку">
+      <bpmn:incoming>F_D_02</bpmn:incoming>
+      <bpmn:outgoing>F_D_03</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sendTask id="Task_Diia_ReturnResult" name="Повернути результат Company X">
+      <bpmn:incoming>F_D_03</bpmn:incoming>
+      <bpmn:outgoing>F_D_04</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_Diia" name="Результат передано">
+      <bpmn:incoming>F_D_04</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F_D_01" sourceRef="Start_Diia_Request" targetRef="Task_Diia_Identify" />
+    <bpmn:sequenceFlow id="F_D_02" sourceRef="Task_Diia_Identify" targetRef="Task_Diia_ConfirmAge" />
+    <bpmn:sequenceFlow id="F_D_03" sourceRef="Task_Diia_ConfirmAge" targetRef="Task_Diia_ReturnResult" />
+    <bpmn:sequenceFlow id="F_D_04" sourceRef="Task_Diia_ReturnResult" targetRef="End_Diia" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_AgeVerification">
+    <bpmndi:BPMNPlane id="BPMNPlane_AgeVerification" bpmnElement="Collaboration_AgeVerification">
+      <bpmndi:BPMNShape id="Shape_Participant_CompanyX" bpmnElement="Participant_CompanyX" isHorizontal="true">
+        <dc:Bounds x="160" y="320" width="3200" height="330" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_CX_Courier" bpmnElement="Lane_CX_Courier" isHorizontal="true">
+        <dc:Bounds x="190" y="550" width="3170" height="100" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_CX_Mobile" bpmnElement="Lane_CX_Mobile" isHorizontal="true">
+        <dc:Bounds x="190" y="440" width="3170" height="110" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_CX_Backend" bpmnElement="Lane_CX_Backend" isHorizontal="true">
+        <dc:Bounds x="190" y="320" width="3170" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Start_CX" bpmnElement="Start_CX">
+        <dc:Bounds x="299" y="362" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="241" y="325" width="160" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_CX_CreateParcel" bpmnElement="Task_CX_CreateParcel">
+        <dc:Bounds x="407" y="345" width="180" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_CX_ReceiveParcelModel" bpmnElement="Event_CX_ReceiveParcelModel">
+        <dc:Bounds x="659" y="362" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="611" y="324.5" width="165" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_CX_CourierDeliver" bpmnElement="Task_CX_CourierDeliver">
+        <dc:Bounds x="792" y="565" width="170" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_CX_AgeRequest" bpmnElement="Event_CX_AgeRequest">
+        <dc:Bounds x="1189" y="475" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1128" y="445.5" width="151" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_CX_RequestDiia" bpmnElement="Task_CX_RequestDiia">
+        <dc:Bounds x="1322" y="345" width="170" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_CX_DiiaResult" bpmnElement="Event_CX_DiiaResult">
+        <dc:Bounds x="1672" y="362" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1640" y="324" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_CX_SendCustomerCode" bpmnElement="Task_CX_SendCustomerCode">
+        <dc:Bounds x="955" y="345" width="170" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_CX_ShowFailure" bpmnElement="Task_CX_ShowFailure">
+        <dc:Bounds x="1890" y="458" width="180" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_CX_Failure" bpmnElement="End_CX_Failure">
+        <dc:Bounds x="1762" y="475" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1741" y="511" width="78" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_CX_AgeConfirmed" bpmnElement="Gateway_CX_AgeConfirmed" isMarkerVisible="true">
+        <dc:Bounds x="1955" y="355" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1936" y="331.5" width="108" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_CX_ShowAgeCode" bpmnElement="Task_CX_ShowAgeCode">
+        <dc:Bounds x="2335" y="458" width="170" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_CX_Success" bpmnElement="End_CX_Success">
+        <dc:Bounds x="2612" y="475" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2595" y="511" width="71" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_F_CX_01" bpmnElement="F_CX_01">
+        <di:waypoint x="335" y="380" />
+        <di:waypoint x="407" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CX_02" bpmnElement="F_CX_02">
+        <di:waypoint x="587" y="380" />
+        <di:waypoint x="659" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CX_03" bpmnElement="F_CX_03">
+        <di:waypoint x="695" y="380" />
+        <di:waypoint x="729" y="380" />
+        <di:waypoint x="729" y="600" />
+        <di:waypoint x="792" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CX_04" bpmnElement="F_CX_04">
+        <di:waypoint x="962" y="600" />
+        <di:waypoint x="1023" y="600" />
+        <di:waypoint x="1023" y="415" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CX_05" bpmnElement="F_CX_05">
+        <di:waypoint x="1080" y="415" />
+        <di:waypoint x="1080" y="493" />
+        <di:waypoint x="1189" y="493" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CX_06" bpmnElement="F_CX_06">
+        <di:waypoint x="1225" y="494" />
+        <di:waypoint x="1267" y="495" />
+        <di:waypoint x="1267" y="380" />
+        <di:waypoint x="1322" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CX_07" bpmnElement="F_CX_07">
+        <di:waypoint x="1492" y="380" />
+        <di:waypoint x="1672" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CX_08" bpmnElement="F_CX_08">
+        <di:waypoint x="1708" y="380" />
+        <di:waypoint x="1955" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CX_10" bpmnElement="F_CX_10">
+        <di:waypoint x="1980" y="405" />
+        <di:waypoint x="1980" y="458" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2004" y="413" width="11" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CX_13" bpmnElement="F_CX_13">
+        <di:waypoint x="1890" y="493" />
+        <di:waypoint x="1798" y="493" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1g4i0tf_di" bpmnElement="Flow_1g4i0tf">
+        <di:waypoint x="2005" y="380" />
+        <di:waypoint x="2420" y="380" />
+        <di:waypoint x="2420" y="458" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2207" y="362" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_CX_12" bpmnElement="F_CX_12">
+        <di:waypoint x="2505" y="493" />
+        <di:waypoint x="2612" y="493" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Shape_Participant_Diia" bpmnElement="Participant_Diia" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="3200" height="190" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Start_Diia_Request" bpmnElement="Start_Diia_Request">
+        <dc:Bounds x="1337" y="155" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1313" y="117.5" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Diia_Identify" bpmnElement="Task_Diia_Identify">
+        <dc:Bounds x="1400" y="133" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Diia_ConfirmAge" bpmnElement="Task_Diia_ConfirmAge">
+        <dc:Bounds x="1600" y="133" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Diia_ReturnResult" bpmnElement="Task_Diia_ReturnResult">
+        <dc:Bounds x="1800" y="133" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Diia" bpmnElement="End_Diia">
+        <dc:Bounds x="2012" y="155" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2005" y="191" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_F_D_01" bpmnElement="F_D_01">
+        <di:waypoint x="1373" y="173" />
+        <di:waypoint x="1400" y="173" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_D_02" bpmnElement="F_D_02">
+        <di:waypoint x="1580" y="173" />
+        <di:waypoint x="1600" y="173" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_D_03" bpmnElement="F_D_03">
+        <di:waypoint x="1780" y="173" />
+        <di:waypoint x="1800" y="173" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_D_04" bpmnElement="F_D_04">
+        <di:waypoint x="1980" y="173" />
+        <di:waypoint x="2012" y="173" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Shape_Participant_OurSystem" bpmnElement="Participant_OurSystem" isHorizontal="true">
+        <dc:Bounds x="160" y="1089" width="3200" height="350" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Our_Locker" bpmnElement="Lane_Our_Locker" isHorizontal="true">
+        <dc:Bounds x="190" y="1229" width="3170" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_Our_Backend" bpmnElement="Lane_Our_Backend" isHorizontal="true">
+        <dc:Bounds x="190" y="1089" width="3170" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Start_Our_CreateParcel" bpmnElement="Start_Our_CreateParcel">
+        <dc:Bounds x="425" y="1139" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="401" y="1175" width="84" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Our_CreateParcel" bpmnElement="Task_Our_CreateParcel">
+        <dc:Bounds x="520" y="1117" width="200" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Our_GenerateCodes" bpmnElement="Task_Our_GenerateCodes">
+        <dc:Bounds x="785" y="1117" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Our_ValidateCourierCode" bpmnElement="Task_Our_ValidateCourierCode">
+        <dc:Bounds x="1210" y="1272" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Our_OpenForLoading" bpmnElement="Task_Our_OpenForLoading">
+        <dc:Bounds x="1430" y="1272" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Our_MarkLoaded" bpmnElement="Task_Our_MarkLoaded">
+        <dc:Bounds x="1640" y="1272" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_Our_CustomerCode" bpmnElement="Event_Our_CustomerCode">
+        <dc:Bounds x="1860" y="1297" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1838" y="1333" width="81" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Our_FindParcel" bpmnElement="Task_Our_FindParcel">
+        <dc:Bounds x="1940" y="1275" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Our_ReturnParcel" bpmnElement="Task_Our_ReturnParcel">
+        <dc:Bounds x="1025" y="1117" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Our_Success" bpmnElement="End_Our_Success">
+        <dc:Bounds x="3192" y="1139" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3183" y="1101.5" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Our_ValidateAgeCode" bpmnElement="Task_Our_ValidateAgeCode">
+        <dc:Bounds x="2585" y="1117" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_Our_CourierCode" bpmnElement="Event_Our_CourierCode">
+        <dc:Bounds x="1092" y="1297" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1065" y="1333" width="90" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Our_ShowAgePrompt" bpmnElement="Task_Our_ShowAgePrompt">
+        <dc:Bounds x="2225" y="1275" width="190" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_Our_AgeCode" bpmnElement="Event_Our_AgeCode">
+        <dc:Bounds x="2542" y="1297" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2516" y="1343" width="87" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0jocnjy_di" bpmnElement="Event_0jocnjy">
+        <dc:Bounds x="2832" y="1382" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2873" y="1379" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Our_ShowInvalid" bpmnElement="Task_Our_ShowInvalid">
+        <dc:Bounds x="2750" y="1277" width="200" height="70" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ffh3tn_di" bpmnElement="Activity_0ffh3tn">
+        <dc:Bounds x="3050" y="1272" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_Our_CodeValid" bpmnElement="Gateway_Our_CodeValid" isMarkerVisible="true">
+        <dc:Bounds x="2875" y="1132" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2863" y="1113" width="74" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_01" bpmnElement="F_OUR_01">
+        <di:waypoint x="461" y="1157" />
+        <di:waypoint x="520" y="1157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_02" bpmnElement="F_OUR_02">
+        <di:waypoint x="720" y="1157" />
+        <di:waypoint x="785" y="1157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_03" bpmnElement="F_OUR_03">
+        <di:waypoint x="955" y="1157" />
+        <di:waypoint x="1025" y="1157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_05" bpmnElement="F_OUR_05">
+        <di:waypoint x="1128" y="1315" />
+        <di:waypoint x="1210" y="1315" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_06" bpmnElement="F_OUR_06">
+        <di:waypoint x="1390" y="1312" />
+        <di:waypoint x="1430" y="1312" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_07" bpmnElement="F_OUR_07">
+        <di:waypoint x="1600" y="1312" />
+        <di:waypoint x="1640" y="1312" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_08" bpmnElement="F_OUR_08">
+        <di:waypoint x="1810" y="1314" />
+        <di:waypoint x="1860" y="1315" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_09" bpmnElement="F_OUR_09">
+        <di:waypoint x="1896" y="1315" />
+        <di:waypoint x="1940" y="1315" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ywk6gb_di" bpmnElement="Flow_0ywk6gb">
+        <di:waypoint x="2120" y="1315" />
+        <di:waypoint x="2225" y="1315" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_04" bpmnElement="F_OUR_04">
+        <di:waypoint x="1110" y="1197" />
+        <di:waypoint x="1110" y="1297" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_19" bpmnElement="F_OUR_19">
+        <di:waypoint x="3150" y="1312" />
+        <di:waypoint x="3210" y="1312" />
+        <di:waypoint x="3210" y="1175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_14" bpmnElement="F_OUR_14">
+        <di:waypoint x="2578" y="1315" />
+        <di:waypoint x="2680" y="1315" />
+        <di:waypoint x="2680" y="1197" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_15" bpmnElement="F_OUR_15">
+        <di:waypoint x="2775" y="1157" />
+        <di:waypoint x="2875" y="1157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_13" bpmnElement="F_OUR_13">
+        <di:waypoint x="2415" y="1315" />
+        <di:waypoint x="2542" y="1315" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19qv6ug_di" bpmnElement="Flow_19qv6ug">
+        <di:waypoint x="2850" y="1347" />
+        <di:waypoint x="2850" y="1382" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_17" bpmnElement="F_OUR_17">
+        <di:waypoint x="2900" y="1182" />
+        <di:waypoint x="2900" y="1277" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2904" y="1217" width="11" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_OUR_16" bpmnElement="F_OUR_16">
+        <di:waypoint x="2925" y="1157" />
+        <di:waypoint x="2990" y="1157" />
+        <di:waypoint x="2990" y="1312" />
+        <di:waypoint x="3050" y="1312" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2942" y="1140" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Shape_Participant_User" bpmnElement="Participant_User" isHorizontal="true">
+        <dc:Bounds x="160" y="690" width="3200" height="329" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_User_CodeResult" bpmnElement="Gateway_User_CodeResult">
+        <dc:Bounds x="2675" y="735" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2640" y="703" width="108" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_User_OpenAfterAge" bpmnElement="Event_User_OpenAfterAge">
+        <dc:Bounds x="2812" y="742" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2763" y="704.5" width="134" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Start_User_CustomerCode" bpmnElement="Start_User_CustomerCode">
+        <dc:Bounds x="1032" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1011" y="888" width="78" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_User_AgeCode" bpmnElement="Event_User_AgeCode">
+        <dc:Bounds x="2402" y="742" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2357" y="786" width="126" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_User_AgePrompt" bpmnElement="Event_User_AgePrompt">
+        <dc:Bounds x="1572" y="842" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1545" y="803.5" width="89" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_User_AgeFailure" bpmnElement="Event_User_AgeFailure">
+        <dc:Bounds x="2282" y="945" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2239" y="987" width="122" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Event_User_InvalidCode" bpmnElement="Event_User_InvalidCode">
+        <dc:Bounds x="2682" y="945" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2633" y="985.5" width="122" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_User_AgeFailure" bpmnElement="End_User_AgeFailure">
+        <dc:Bounds x="2452" y="945" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2443" y="917" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_User_Success" bpmnElement="End_User_Success">
+        <dc:Bounds x="3162" y="742" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3155" y="711" width="50" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0emdf8y_di" bpmnElement="Activity_0emdf8y">
+        <dc:Bounds x="1940" y="820" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1wthjmc_di" bpmnElement="Activity_1wthjmc">
+        <dc:Bounds x="2510" y="720" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02zaytj_di" bpmnElement="Activity_02zaytj">
+        <dc:Bounds x="1150" y="820" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_09ti96p_di" bpmnElement="Activity_09ti96p">
+        <dc:Bounds x="1360" y="820" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1wyk9cl_di" bpmnElement="Activity_1wyk9cl">
+        <dc:Bounds x="1720" y="820" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_User_AgeResult" bpmnElement="Gateway_User_AgeResult">
+        <dc:Bounds x="2143" y="835" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2103" y="794.5" width="113" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1dakl7e_di" bpmnElement="Activity_1dakl7e">
+        <dc:Bounds x="2949" y="720" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_F_U_12" bpmnElement="F_U_12">
+        <di:waypoint x="2610" y="760" />
+        <di:waypoint x="2675" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_13" bpmnElement="F_U_13">
+        <di:waypoint x="2725" y="760" />
+        <di:waypoint x="2812" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_14" bpmnElement="F_U_14">
+        <di:waypoint x="2700" y="785" />
+        <di:waypoint x="2700" y="945" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_16" bpmnElement="F_U_16">
+        <di:waypoint x="2848" y="760" />
+        <di:waypoint x="2949" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_01" bpmnElement="F_U_01">
+        <di:waypoint x="1068" y="860" />
+        <di:waypoint x="1150" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_09" bpmnElement="F_U_09">
+        <di:waypoint x="2168" y="835" />
+        <di:waypoint x="2168" y="760" />
+        <di:waypoint x="2402" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_11" bpmnElement="F_U_11">
+        <di:waypoint x="2438" y="760" />
+        <di:waypoint x="2510" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_03" bpmnElement="F_U_03">
+        <di:waypoint x="1460" y="860" />
+        <di:waypoint x="1572" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_06" bpmnElement="F_U_06">
+        <di:waypoint x="1608" y="860" />
+        <di:waypoint x="1720" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_10" bpmnElement="F_U_10">
+        <di:waypoint x="2168" y="885" />
+        <di:waypoint x="2168" y="963" />
+        <di:waypoint x="2282" y="963" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_19" bpmnElement="F_U_19">
+        <di:waypoint x="2318" y="963" />
+        <di:waypoint x="2452" y="963" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1a4r4a5_di" bpmnElement="Flow_1a4r4a5">
+        <di:waypoint x="2682" y="963" />
+        <di:waypoint x="2488" y="963" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_18" bpmnElement="F_U_18">
+        <di:waypoint x="3049" y="760" />
+        <di:waypoint x="3162" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_07" bpmnElement="F_U_07">
+        <di:waypoint x="1820" y="860" />
+        <di:waypoint x="1940" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_08" bpmnElement="F_U_08">
+        <di:waypoint x="2040" y="860" />
+        <di:waypoint x="2143" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_F_U_02" bpmnElement="F_U_02">
+        <di:waypoint x="1250" y="860" />
+        <di:waypoint x="1360" y="860" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_14hahi5_di" bpmnElement="Association_14hahi5">
+        <di:waypoint x="2585" y="1141" />
+        <di:waypoint x="2513" y="1129" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_01" bpmnElement="M_01">
+        <di:waypoint x="443" y="420" />
+        <di:waypoint x="443" y="1139" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="326" y="703" width="234" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_02" bpmnElement="M_02">
+        <di:waypoint x="1070" y="1117" />
+        <di:waypoint x="1070" y="960" />
+        <di:waypoint x="677" y="960" />
+        <di:waypoint x="677" y="398" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="566" y="591" width="221" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_03" bpmnElement="M_03">
+        <di:waypoint x="877" y="635" />
+        <di:waypoint x="877" y="1315" />
+        <di:waypoint x="1092" y="1315" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="837" y="703" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_08" bpmnElement="M_08">
+        <di:waypoint x="1990" y="817" />
+        <di:waypoint x="1990" y="620" />
+        <di:waypoint x="1207" y="620" />
+        <di:waypoint x="1207" y="511" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1254" y="633" width="151" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_09" bpmnElement="M_09">
+        <di:waypoint x="1355" y="345" />
+        <di:waypoint x="1355" y="191" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1288" y="273" width="163" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jlz08a_di" bpmnElement="Flow_1jlz08a">
+        <di:waypoint x="1893" y="213" />
+        <di:waypoint x="1893" y="290" />
+        <di:waypoint x="1690" y="290" />
+        <di:waypoint x="1690" y="362" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1705" y="273" width="170" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n5d8rh_di" bpmnElement="Flow_0n5d8rh">
+        <di:waypoint x="1050" y="416" />
+        <di:waypoint x="1050" y="840" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1011" y="703" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_12" bpmnElement="M_12">
+        <di:waypoint x="2070" y="493" />
+        <di:waypoint x="2300" y="493" />
+        <di:waypoint x="2300" y="945" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2245" y="582" width="110" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_11" bpmnElement="M_11">
+        <di:waypoint x="2420" y="528" />
+        <di:waypoint x="2420" y="742" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2369" y="620" width="100" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_05" bpmnElement="M_05">
+        <di:waypoint x="1410" y="900" />
+        <di:waypoint x="1410" y="1190" />
+        <di:waypoint x="1878" y="1190" />
+        <di:waypoint x="1878" y="1297" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1452" y="1173" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_06" bpmnElement="M_06">
+        <di:waypoint x="2320" y="1275" />
+        <di:waypoint x="2320" y="1150" />
+        <di:waypoint x="1590" y="1150" />
+        <di:waypoint x="1590" y="878" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1979" y="1119" width="78" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_13" bpmnElement="M_13">
+        <di:waypoint x="2560" y="800" />
+        <di:waypoint x="2560" y="1297" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2515" y="1048" width="89" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_15" bpmnElement="M_15">
+        <di:waypoint x="2820" y="1275" />
+        <di:waypoint x="2820" y="963" />
+        <di:waypoint x="2718" y="963" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2800" y="1058" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_M_14" bpmnElement="M_14">
+        <di:waypoint x="3100" y="1272" />
+        <di:waypoint x="3100" y="860" />
+        <di:waypoint x="2830" y="860" />
+        <di:waypoint x="2830" y="778" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3052" y="1063" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="TextAnnotation_0wh3l0q_di" bpmnElement="TextAnnotation_0wh3l0q">
+        <dc:Bounds x="2410" y="1100" width="102.95820978502594" height="86" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
