@@ -79,19 +79,13 @@ BPMN-файл:
 
 ### Edge cases та відкриті питання
 
-Окремо розглядаються:
+Серед основних сценаріїв розглядаються:
 
 - неуспішне підтвердження віку;
-- недоступність Дії або Company X;
-- неможливість зареєструвати OTP;
-- невалідний або прострочений код;
-- повторне використання OTP;
-- перевищення кількості невдалих спроб;
-- повторна генерація коду;
-- недоступність Backend нашої системи;
-- offline-стан поштомата;
-- одночасні запити на використання одного OTP;
-- ситуація, коли код валідний, але комірка фізично не відкрилася.
+- невалідний або прострочений OTP;
+- та інші альтернативні й помилкові сценарії.
+
+Окремо визначено assumptions та ключові відкриті питання, які необхідно уточнити перед передачею функціоналу в розробку.
 
 Документація:
 
@@ -174,19 +168,13 @@ Detailed documentation:
 
 ### Edge cases and open questions
 
-The solution separately considers:
+Key scenarios include:
 
 - failed age verification;
-- Diia or Company X unavailability;
-- OTP registration failure;
-- invalid or expired codes;
-- repeated OTP usage;
-- exceeded failed-attempt limits;
-- OTP regeneration;
-- Our System Backend unavailability;
-- locker offline mode;
-- concurrent attempts to use the same OTP;
-- a valid OTP followed by a physical locker-opening failure.
+- invalid or expired OTP;
+- and other alternative and error scenarios.
+
+The documentation also identifies assumptions and key open questions that should be clarified before development.
 
 Documentation:
 
