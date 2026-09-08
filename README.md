@@ -73,7 +73,7 @@ BPMN-файл:
 
 Детальний опис:
 
-`docs/uk/validation-mechanism.md`
+`docs/uk/validation-schema.md`
 
 ---
 
@@ -162,7 +162,7 @@ After successful age verification:
 
 Detailed documentation:
 
-`docs/en/validation-mechanism.md`
+`docs/en/validation-schema.md`
 
 ---
 
