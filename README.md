@@ -11,7 +11,7 @@
 
 Цей репозиторій містить бізнес- та інтеграційний аналіз кейсу доставки товарів із віковими обмеженнями через поштомати.
 
-Мета рішення — змоделювати процес підтвердження віку користувача за допомогою **Дії** та запропонувати безпечний механізм перевірки одноразового коду перед відкриттям комірки поштомата.
+Мета рішення — змоделювати процес підтвердження віку користувача за допомогою Дії та запропонувати безпечний механізм перевірки одноразового коду перед відкриттям комірки поштомата.
 
 ### Учасники процесу
 
@@ -165,21 +165,6 @@ After successful age verification:
 6. Locker software submits the code to Our System Backend.
 7. The Backend validates the code, TTL, status, and parcel association.
 8. After successful validation, the code is marked as used and the locker is authorized to open the compartment.
-
-### Why this approach
-
-At the moment of parcel collection, the locker depends only on Our System Backend.
-
-It avoids the synchronous dependency chain:
-
-`Locker → Our System → Company X → Our System → Locker`
-
-This:
-
-- reduces the number of failure points during parcel collection;
-- shortens the critical integration path;
-- allows Our System to control OTP lifetime and one-time usage;
-- enables rate limiting and failed-attempt controls on our side.
 
 Detailed documentation:
 
