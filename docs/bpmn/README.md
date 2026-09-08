@@ -16,9 +16,10 @@
 BPMN-файл:
 
 `age-verification-locker.bpmn`
+
 ## Preview
 
-![BPMN 2.0 — Age Verification for Parcel Locker Delivery](../../age-verification-locker-preview.png)
+![BPMN 2.0 — Age Verification for Parcel Locker Delivery](age-verification-locker-preview.png)
 ---
 
 ## 🇬🇧 English
